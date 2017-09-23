@@ -10,7 +10,7 @@ import numpy as np
 from sqlite3 import dbapi2 as sqlite3
 from hashlib import md5
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, abort, g, flash, _app_ctx_stack
+     render_template, abort, g, flash, _app_ctx_stack, send_from_directory
 from flask_limiter import Limiter
 from werkzeug import check_password_hash, generate_password_hash
 import pymongo
@@ -27,7 +27,7 @@ else:
   SECRET_KEY = 'devkey, should be in a file'
 app = Flask(__name__)
 app.config.from_object(__name__)
-limiter = Limiter(app, global_limits=["100 per hour", "20 per minute"])
+limiter = Limiter(app, default_limits=["100 per hour", "20 per minute"])
 
 # -----------------------------------------------------------------------------
 # utilities for database interactions 
@@ -636,6 +636,11 @@ def logout():
   session.pop('user_id', None)
   flash('You were logged out')
   return redirect(url_for('intmain'))
+
+@app.route('/pdf/<path:path>')
+def send_pdf(path):
+  print(path)
+  return send_from_directory('data/pdf', path)
 
 # -----------------------------------------------------------------------------
 # int main

@@ -61,8 +61,11 @@ CACHE['top_sorted_pids'] = [q[1] for q in top_paper_counts]
 # some utilities for creating a search index for faster search
 punc = "'!\"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'" # removed hyphen from string.punctuation
 trans_table = {ord(c): None for c in punc}
-def makedict(s, forceidf=None, scale=1.0):
+def makedict(s, forceidf=None, scale=1.0, skip_transalate=False):
   words = set(s.lower().translate(trans_table).strip().split())
+  if skip_transalate:
+    words = set(s.lower().strip().split())
+
   idfd = {}
   for w in words: # todo: if we're using bigrams in vocab then this won't search over them
     if forceidf is None:
@@ -75,6 +78,7 @@ def makedict(s, forceidf=None, scale=1.0):
       idfval = forceidf
     idfd[w] = idfval
   return idfd
+
 
 def merge_dicts(dlist):
   m = {}
@@ -93,7 +97,14 @@ for pid,p in db.items():
     # special case for "and" handling in authors list
     del dict_authors['and']
   dict_summary = makedict(p['summary'])
-  search_dict[pid] = merge_dicts([dict_title, dict_authors, dict_categories, dict_summary])
+
+  # also index pid, arxiv url for faster local search
+  # print( pid, p)
+  def get_links(pid):
+    return 'https://arxiv.org/abs/%s http://arxiv.org/abs/%s' %(pid, pid) 
+  dict_pid_title = makedict('%s %s' %(pid, get_links(pid)), forceidf=5, skip_transalate=True)
+  # print(dict_title, dict_authors, dict_categories, dict_summary, dict_pid_title)
+  search_dict[pid] = merge_dicts([dict_title, dict_authors, dict_categories, dict_summary, dict_pid_title])
 CACHE['search_dict'] = search_dict
 
 # save the cache

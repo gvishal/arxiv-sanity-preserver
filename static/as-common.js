@@ -129,6 +129,9 @@ function addPapers(num, dynamic) {
     var pdf_link = p.link.replace("abs", "pdf"); // convert from /abs/ link to /pdf/ link. url hacking. slightly naughty
     if(pdf_link === p.link) { var pdf_url = pdf_link } // replace failed, lets fall back on arxiv landing page
     else { var pdf_url = pdf_link + '.pdf'; }
+    var base_ip = "10.2.132.165";
+    var base_ip = window.location.hostname;
+    pdf_url = pdf_url.replace("arxiv.org", base_ip);
     ldiv.append('a').attr('href', pdf_url).attr('target', '_blank').html('pdf');
     
     // rank by tfidf similarity
